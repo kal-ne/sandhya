@@ -1,0 +1,578 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sandhyā — junction timings</title>
+<meta name="description" content="Prātaḥ, mādhyāhnika and sāyam sandhyā windows computed from true sunrise, solar transit and sunset for your location.">
+<meta name="theme-color" content="#10111A">
+<meta name="color-scheme" content="dark">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Sandhyā">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%2310111A'/%3E%3Ccircle cx='32' cy='38' r='13' fill='%23BE3540'/%3E%3Crect x='6' y='37' width='52' height='2' fill='%23EAE7DE'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:ital,wght@0,300;0,500;0,600;1,300&family=IBM+Plex+Mono:wght@300;400;500&family=IBM+Plex+Sans:wght@400;500;600&family=Noto+Serif+Devanagari:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#10111A; --surface:#191B27; --surface2:#212432; --line:#2E3242; --line-soft:#232633;
+  --text:#EAE7DE; --mute:#878CA1; --dim:#5F6478;
+  --sindoor:#BE3540; --sindoor-soft:#D9736F; --sindoor-deep:#7B1720;
+  --pratah:#6E93D6; --madhya:#E6BF5C; --sayam:#A067C9;
+  --serif:"Spectral",Georgia,serif;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --deva:"Noto Serif Devanagari","Spectral",serif;
+}
+*{box-sizing:border-box}
+html{background:#10111A;color-scheme:dark}
+html,body{margin:0;padding:0}
+body{
+  background:#10111A; color:var(--text); font-family:var(--sans);
+  font-size:15px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.page{background:var(--ink);min-height:100vh;padding:0 0 4rem}
+.wrap{max-width:920px;margin:0 auto;padding:0 20px}
+.eyebrow{
+  font-family:var(--mono); font-size:11px; letter-spacing:.16em; text-transform:uppercase;
+  color:var(--dim);
+}
+
+/* ── masthead ─────────────────────────────── */
+header{padding:34px 0 20px;border-bottom:1px solid var(--sindoor-deep)}
+.mast{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.mast .dev{font-family:var(--deva);font-size:32px;line-height:1;color:var(--sindoor)}
+.mast h1{font-family:var(--serif);font-weight:400;font-size:29px;letter-spacing:.01em;margin:0;color:var(--sindoor)}
+.mast .gloss{font-family:var(--serif);font-style:italic;font-weight:300;color:var(--mute);font-size:15px}
+.placeline{margin-top:10px;font-family:var(--mono);font-size:12.5px;color:var(--mute)}
+.placeline b{color:var(--text);font-weight:400}
+
+/* ── status ───────────────────────────────── */
+.status{padding:30px 0 8px}
+.status .lead{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+.status .name{
+  font-family:var(--serif);font-size:clamp(34px,8vw,52px);font-weight:300;
+  line-height:1.05;margin:8px 0 2px;letter-spacing:-.01em;
+}
+.status .name .dv{font-family:var(--deva);font-size:.62em;color:var(--mute);margin-left:.5em;font-weight:400}
+.status .span{font-family:var(--mono);font-size:clamp(17px,4.4vw,23px);font-weight:300;letter-spacing:.01em;color:var(--text);margin-top:6px}
+.status .span .arrow{color:var(--dim);padding:0 .45em}
+.status .clock{margin-top:12px;font-family:var(--mono);font-size:13px;color:var(--mute)}
+.status .clock .big{color:var(--text);font-size:15px}
+.pill{
+  display:inline-block;font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;
+  text-transform:uppercase;padding:3px 9px;border-radius:2px;border:1px solid;vertical-align:2px;
+}
+
+/* ── ribbon (signature) ───────────────────── */
+.ribbon{margin:22px 0 6px;position:relative}
+.ribbon svg{display:block;width:100%;height:auto;overflow:visible}
+.ribbon .caption{
+  display:flex;justify-content:space-between;font-family:var(--mono);font-size:10.5px;
+  color:var(--dim);letter-spacing:.09em;margin-top:8px;
+}
+
+/* ── cards ────────────────────────────────── */
+.cards{display:grid;gap:1px;background:var(--line-soft);border:1px solid var(--line-soft);margin-top:26px}
+.card{background:var(--surface);padding:20px 20px 18px;position:relative}
+.card.on{background:var(--surface2)}
+.card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:2px;background:var(--ac)}
+.card .head{display:flex;justify-content:space-between;align-items:baseline;gap:12px;flex-wrap:wrap}
+.card .title{font-family:var(--serif);font-size:21px;font-weight:500;color:var(--sindoor)}
+.card .title .dv{font-family:var(--deva);font-size:.68em;color:var(--sindoor);opacity:.72;margin-left:.45em;font-weight:400}
+.card .range{font-family:var(--mono);font-size:16px;font-weight:400;color:var(--ac);white-space:nowrap}
+.card .sub{font-family:var(--serif);font-style:italic;font-weight:300;color:var(--mute);font-size:13.5px;margin-top:3px}
+.grades{margin-top:14px;display:grid;gap:0}
+.grade{
+  display:grid;grid-template-columns:78px 1fr auto;gap:10px;align-items:baseline;
+  padding:6px 0;border-top:1px solid var(--line-soft);font-size:13px;
+}
+.grade:first-child{border-top:0}
+.grade .g{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--dim)}
+.grade.best .g{color:var(--ac)}
+.grade .d{color:var(--mute);font-size:12.5px;line-height:1.4}
+.grade .t{font-family:var(--mono);font-size:12.5px;color:var(--text);white-space:nowrap}
+.anchor{
+  margin-top:13px;padding-top:11px;border-top:1px solid var(--line-soft);
+  font-family:var(--mono);font-size:12px;color:var(--mute);display:flex;justify-content:space-between;gap:12px;
+}
+.anchor b{color:var(--ac);font-weight:400}
+
+/* ── reference table ──────────────────────── */
+.ref{margin-top:26px;border:1px solid var(--line-soft);background:var(--surface)}
+.ref h2{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--sindoor-soft);
+  margin:0;padding:14px 18px 10px;font-weight:400}
+.reftable{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:1px;background:var(--line-soft)}
+.reftable div{background:var(--surface);padding:11px 18px 13px}
+.reftable dt{font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;color:var(--dim);margin:0}
+.reftable dd{font-family:var(--mono);font-size:16px;margin:3px 0 0;font-weight:300}
+
+/* ── controls ─────────────────────────────── */
+.controls{margin-top:26px;border:1px solid var(--line-soft);background:var(--surface);padding:18px}
+.row{display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+label.f{display:flex;flex-direction:column;gap:5px;flex:1 1 130px;min-width:0}
+label.f span{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+input,select,button{
+  font-family:var(--mono);font-size:13.5px;color:var(--text);background:var(--ink);
+  border:1px solid var(--line);border-radius:2px;padding:9px 10px;width:100%;
+}
+select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--mute) 50%),linear-gradient(135deg,var(--mute) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 50%,calc(100% - 10px) 50%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;padding-right:28px}
+button{cursor:pointer;border-color:var(--line);transition:border-color .15s,color .15s;white-space:nowrap}
+button:hover{border-color:var(--mute)}
+button.primary{border-color:var(--madhya);color:var(--madhya)}
+button.primary:hover{background:rgba(230,191,92,.07)}
+:focus-visible{outline:2px solid var(--madhya);outline-offset:2px}
+.msg{margin-top:12px;font-family:var(--mono);font-size:12px;color:var(--mute);line-height:1.5}
+.msg.warn{color:var(--madhya)}
+.msg.err{color:var(--sayam)}
+
+details{margin-top:26px;border:1px solid var(--line-soft);background:var(--surface)}
+summary{cursor:pointer;padding:15px 18px;font-family:var(--mono);font-size:11px;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--sindoor-soft);list-style:none}
+summary::-webkit-details-marker{display:none}
+summary::after{content:" +";color:var(--dim)}
+details[open] summary::after{content:" −"}
+.notes{padding:0 18px 20px;font-size:13.5px;line-height:1.65;color:var(--mute);max-width:66ch}
+.notes h3{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--sindoor-soft);margin:20px 0 7px;font-weight:400}
+.notes h3:first-child{margin-top:4px}
+.notes p{margin:0 0 9px}
+.notes ul{margin:0 0 9px;padding-left:17px}
+.notes li{margin-bottom:5px}
+.notes b{color:var(--text);font-weight:500}
+.notes .dv{font-family:var(--deva)}
+.tag{font-family:var(--mono);font-size:9.5px;letter-spacing:.11em;text-transform:uppercase;
+  border:1px solid var(--line);padding:1px 5px;border-radius:2px;color:var(--dim);margin-right:6px;white-space:nowrap}
+.tag.fact{color:var(--pratah);border-color:rgba(110,147,214,.4)}
+.tag.attest{color:var(--madhya);border-color:rgba(230,191,92,.4)}
+.tag.mine{color:var(--sayam);border-color:rgba(160,103,201,.4)}
+footer{margin-top:22px;font-family:var(--mono);font-size:11px;color:var(--dim);line-height:1.6}
+@media (max-width:520px){
+  .grade{grid-template-columns:66px 1fr;row-gap:2px}
+  .grade .t{grid-column:2;font-size:12px}
+  .card .range{font-size:14.5px}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="wrap">
+
+<header>
+  <div class="mast">
+    <span class="dev">सन्ध्या</span>
+    <h1>Sandhyā</h1>
+    <span class="gloss">the junctures of the day</span>
+  </div>
+  <div class="placeline" id="placeline">Locating…</div>
+</header>
+
+<section class="status" id="status"></section>
+
+<div class="ribbon" id="ribbon"></div>
+
+<section class="cards" id="cards"></section>
+
+<section class="ref">
+  <h2>Solar reference</h2>
+  <div class="reftable" id="ref"></div>
+</section>
+
+<section class="controls">
+  <div class="row">
+    <label class="f" style="flex:1 1 170px"><span>Place</span>
+      <select id="city"></select></label>
+    <label class="f" style="flex:0 0 100px"><span>Latitude</span>
+      <input id="lat" inputmode="decimal" autocomplete="off"></label>
+    <label class="f" style="flex:0 0 100px"><span>Longitude</span>
+      <input id="lon" inputmode="decimal" autocomplete="off"></label>
+    <label class="f" style="flex:0 0 150px"><span>Date</span>
+      <input id="date" type="date"></label>
+    <div style="flex:0 0 auto"><button class="primary" id="geo">Use my location</button></div>
+  </div>
+  <div class="msg" id="msg"></div>
+
+  <div class="row" style="margin-top:18px">
+    <label class="f"><span>Aruṇodaya opens</span>
+      <select id="s-arun">
+        <option value="4" selected>4 ghaṭikās before sunrise</option>
+        <option value="3">3 ghaṭikās before sunrise</option>
+        <option value="2">2 ghaṭikās before sunrise</option>
+      </select></label>
+    <label class="f"><span>Evening opens</span>
+      <select id="s-eve">
+        <option value="1" selected>1 ghaṭikā before sunset</option>
+        <option value="2">2 ghaṭikās before sunset</option>
+        <option value="3">3 ghaṭikās before sunset</option>
+      </select></label>
+    <label class="f"><span>Stars counted visible at</span>
+      <select id="s-star">
+        <option value="12" selected>Sun 12° below horizon</option>
+        <option value="6">Sun 6° below horizon</option>
+      </select></label>
+    <label class="f"><span>Mādhyāhnika window</span>
+      <select id="s-mid">
+        <option value="fifth" selected>3rd fifth of the daytime</option>
+        <option value="1">Transit ± 1 ghaṭikā</option>
+        <option value="2">Transit ± 2 ghaṭikās</option>
+      </select></label>
+  </div>
+</section>
+
+<details>
+  <summary>How these times are computed</summary>
+  <div class="notes">
+
+    <h3>Astronomy</h3>
+    <p><span class="tag fact">verifiable</span>Sunrise, sunset and twilight come from the NOAA solar-position algorithm (Meeus, <i>Astronomical Algorithms</i>), computed in your browser — no network call, no almanac lookup. Sunrise and sunset use a solar zenith of 90.833°, which folds in the standard 34′ of atmospheric refraction plus the Sun's 16′ semi-diameter, so the instant is <b>upper limb touching the horizon</b>. Expected error is under a minute at low and mid latitudes.</p>
+    <p><span class="tag fact">verifiable</span>Transit is <b>true local solar noon</b> — the Sun on your meridian. It drifts from clock noon by the equation of time (up to ±16 min) plus your longitude offset from the timezone's standard meridian (4 min per degree). In Goa that offset alone is about +26 min behind IST; in Kochi about +35 min.</p>
+    <p><span class="tag fact">verifiable</span>One <b>ghaṭikā</b> is 24 minutes — sixty of them make an ahorātra of 24 hours.</p>
+
+    <h3>What is attested in the texts</h3>
+    <p><span class="tag attest">attested</span>Manusmṛti 2.101 fixes the two endpoints by posture: the morning Sāvitrī is recited <b>standing, until the Sun appears</b>; the evening one <b>seated, until the stars become clearly visible</b>. Every boundary this app draws for prātaḥ and sāyam is derived from that one rule, not from a clock.</p>
+    <p><span class="tag attest">attested</span>The three-fold grading — <b>uttama / madhyama / adhama</b> — is standard in the practical manuals. That the grading exists is well attested. The exact clock boundaries are <i>not</i> uniform across sampradāyas, which is why they are adjustable above.</p>
+    <p><span class="tag attest">attested</span>The daytime's five-fold division — prātaḥ, saṅgava, madhyāhna, aparāhṇa, sāyāhna — is standard Dharmaśāstra. Madhyāhna is the third part.</p>
+
+    <h3>Choices I made — treat these as inference, not doctrine</h3>
+    <ul>
+      <li><b>"Stars visible"</b> is mapped to nautical twilight, the Sun 12° below the horizon, when most stars are still or already out. Civil twilight (6°) is the alternative and is offered in the settings. No text specifies a degree — this is a modern proxy for a naked-eye test.</li>
+      <li><b>Aruṇodaya</b> is taken as 4 ghaṭikās before sunrise. This is the figure most often cited, but 2 and 3 are also used, so it is a setting.</li>
+      <li><b>Grades are assigned by start time</b>, with a separate concluding target, because that is what the Manusmṛti rule actually constrains. A session that begins in uttama and runs past sunrise is still uttama.</li>
+      <li>The adhama tail is cut off arbitrarily — one ghaṭikā past sunrise in the morning, six degrees past the star threshold in the evening. Nothing turns on those endpoints.</li>
+    </ul>
+
+    <h3>What this does not do</h3>
+    <p><span class="tag mine">limitation</span>No pañcāṅga elements — no tithi, nakṣatra, yoga or karaṇa, and no vāra-based adjustment. A dṛk-gaṇita pañcāṅga will usually agree on sunrise to within a minute or two, and may disagree materially on window boundaries wherever your tradition's rule differs from the ones above.</p>
+    <p><span class="tag mine">limitation</span>Times are drawn for a flat sea-level horizon. Hills, buildings or elevation will shift the sun you actually see by several minutes — later at rising, earlier at setting, if the western horizon is high.</p>
+    <p><span class="tag mine">limitation</span>Clock times are rendered in your <b>device's</b> timezone. If you set coordinates far from where the device thinks it is, the instants remain correct but the labels will look wrong; a warning appears above when the mismatch is large.</p>
+
+    <h3>Etymology</h3>
+    <ul>
+      <li><span class="dv">सन्ध्या</span> <b>sandhyā</b> — from <i>sam</i> + √<i>dhā</i>, "to place together": the joint, the seam where day and night are fastened.</li>
+      <li><span class="dv">अरुणोदय</span> <b>aruṇodaya</b> — the rising of Aruṇa, the Sun's charioteer, who goes ahead of him; the reddening before the disc.</li>
+      <li><span class="dv">घटिका</span> <b>ghaṭikā</b> — "little pot," after the pierced copper bowl sunk in water that took exactly this long to fill.</li>
+      <li><span class="dv">माध्याह्निक</span> <b>mādhyāhnika</b> — "belonging to midday," from <i>madhya</i> (middle) + <i>ahan</i> (day).</li>
+    </ul>
+  </div>
+</details>
+
+<footer>
+  Computed locally in this page. Nothing is sent anywhere.<br>
+  Where the app and your ācārya disagree, the ācārya is right.
+</footer>
+</div>
+</div>
+
+<script>
+const D2R=Math.PI/180,R2D=180/Math.PI;
+/* ── NOAA solar position ───────────────────────────────────── */
+function toJulian(y,m,d){if(m<=2){y-=1;m+=12}const A=Math.floor(y/100),B=2-A+Math.floor(A/4);
+  return Math.floor(365.25*(y+4716))+Math.floor(30.6001*(m+1))+d+B-1524.5}
+function solarParams(jd){
+  const T=(jd-2451545)/36525;
+  let L0=(280.46646+T*(36000.76983+T*3.032e-4))%360;if(L0<0)L0+=360;
+  const M=357.52911+T*(35999.05029-1.537e-4*T);
+  const e=0.016708634-T*(4.2037e-5+1.267e-7*T);
+  const C=Math.sin(M*D2R)*(1.914602-T*(0.004817+1.4e-5*T))
+        +Math.sin(2*M*D2R)*(0.019993-1.01e-4*T)+Math.sin(3*M*D2R)*2.89e-4;
+  const omega=125.04-1934.136*T;
+  const lambda=L0+C-0.00569-0.00478*Math.sin(omega*D2R);
+  const sec=21.448-T*(46.815+T*(5.9e-4-T*0.001813));
+  const eps=23+(26+sec/60)/60+0.00256*Math.cos(omega*D2R);
+  const decl=Math.asin(Math.sin(eps*D2R)*Math.sin(lambda*D2R))*R2D;
+  const y=Math.pow(Math.tan(eps/2*D2R),2);
+  const eq=4*R2D*(y*Math.sin(2*L0*D2R)-2*e*Math.sin(M*D2R)
+      +4*e*y*Math.sin(M*D2R)*Math.cos(2*L0*D2R)
+      -0.5*y*y*Math.sin(4*L0*D2R)-1.25*e*e*Math.sin(2*M*D2R));
+  return{decl:decl,eq:eq}}
+function hourAngle(lat,decl,z){
+  const c=Math.cos(z*D2R)/(Math.cos(lat*D2R)*Math.cos(decl*D2R))-Math.tan(lat*D2R)*Math.tan(decl*D2R);
+  return(c>1||c<-1)?null:Math.acos(c)*R2D}
+function transitUTC(jd0,lon){let p=solarParams(jd0+.5),t=720-4*lon-p.eq;
+  p=solarParams(jd0+t/1440);return 720-4*lon-p.eq}
+function eventUTC(jd0,lat,lon,z,rising){
+  let p=solarParams(jd0+.5),ha=hourAngle(lat,p.decl,z);if(ha===null)return null;
+  let t=720-4*lon-p.eq+(rising?-4*ha:4*ha);
+  for(let i=0;i<3;i++){p=solarParams(jd0+t/1440);ha=hourAngle(lat,p.decl,z);
+    if(ha===null)return null;t=720-4*lon-p.eq+(rising?-4*ha:4*ha)}
+  return t}
+function altitudeAt(date,lat,lon){
+  const jd=date.getTime()/86400000+2440587.5,p=solarParams(jd);
+  const minUTC=(jd+.5-Math.floor(jd+.5))*1440;
+  let tst=minUTC+4*lon+p.eq,H=tst/4-180;H=((H+180)%360+360)%360-180;
+  return Math.asin(Math.sin(lat*D2R)*Math.sin(p.decl*D2R)
+    +Math.cos(lat*D2R)*Math.cos(p.decl*D2R)*Math.cos(H*D2R))*R2D}
+
+/* ── day model ─────────────────────────────────────────────── */
+const GH=24; // minutes in one ghatika
+function solarDay(localDate,lat,lon){
+  const noon=new Date(localDate.getFullYear(),localDate.getMonth(),localDate.getDate(),12,0,0);
+  const jd0=toJulian(noon.getUTCFullYear(),noon.getUTCMonth()+1,noon.getUTCDate());
+  const base=Date.UTC(noon.getUTCFullYear(),noon.getUTCMonth(),noon.getUTCDate());
+  const at=t=>t===null?null:new Date(base+t*60000);
+  return{
+    date:localDate,
+    sunrise:at(eventUTC(jd0,lat,lon,90.833,true)),
+    sunset:at(eventUTC(jd0,lat,lon,90.833,false)),
+    transit:at(transitUTC(jd0,lon)),
+    dawn:d=>at(eventUTC(jd0,lat,lon,90+d,true)),
+    dusk:d=>at(eventUTC(jd0,lat,lon,90+d,false))
+  }}
+const mins=(d,m)=>new Date(d.getTime()+m*60000);
+function buildWindows(localDate,lat,lon,cfg){
+  const s=solarDay(localDate,lat,lon);
+  if(!s.sunrise||!s.sunset)return{solar:s,windows:[],polar:true};
+  const D=(s.sunset-s.sunrise)/60000;
+  const starDawn=s.dawn(cfg.star)||mins(s.sunrise,-45);
+  const starDusk=s.dusk(cfg.star)||mins(s.sunset,45);
+  const lateDusk=s.dusk(cfg.star+6)||mins(starDusk,25);
+  const arun=mins(s.sunrise,-cfg.arun*GH);
+  const uttamaEnd=starDawn>arun?starDawn:arun;
+
+  let mStart,mEnd;
+  if(cfg.mid==='fifth'){mStart=mins(s.sunrise,2*D/5);mEnd=mins(s.sunrise,3*D/5)}
+  else{const g=parseInt(cfg.mid,10)*GH;mStart=mins(s.transit,-g);mEnd=mins(s.transit,g)}
+
+  const W=[
+    {key:'pratah',ac:'#6E93D6',name:'Prātaḥ',dev:'प्रातःसन्ध्या',
+     sub:'Begun in the dark, closed as the disc appears.',
+     start:arun,end:mins(s.sunrise,GH),
+     grades:[
+       {g:'Uttama',best:true,d:'Stars still out',a:arun,b:uttamaEnd},
+       {g:'Madhyama',d:'Twilight; the Sun not yet up',a:uttamaEnd,b:s.sunrise},
+       {g:'Adhama',d:'After the Sun has risen',a:s.sunrise,b:mins(s.sunrise,GH)}],
+     anchor:{l:'Conclude at sunrise',t:s.sunrise}},
+    {key:'madhya',ac:'#E6BF5C',name:'Mādhyāhnika',dev:'माध्याह्निक',
+     sub:cfg.mid==='fifth'?'The third of the daytime\u2019s five parts.':'Centred on the meridian passage.',
+     start:mStart,end:mEnd,grades:[],
+     anchor:{l:'True solar noon',t:s.transit}},
+    {key:'sayam',ac:'#A067C9',name:'Sāyam',dev:'सायंसन्ध्या',
+     sub:'Begun while the Sun is up, closed as the stars come out.',
+     start:mins(s.sunset,-cfg.eve*GH),end:lateDusk,
+     grades:[
+       {g:'Uttama',best:true,d:'Sun still above the horizon',a:mins(s.sunset,-cfg.eve*GH),b:s.sunset},
+       {g:'Madhyama',d:'Sun down, stars not yet out',a:s.sunset,b:starDusk},
+       {g:'Adhama',d:'After the stars have appeared',a:starDusk,b:lateDusk}],
+     anchor:{l:'Conclude as stars appear',t:starDusk}}
+  ];
+  return{solar:s,windows:W,starDawn:starDawn,starDusk:starDusk,arun:arun,polar:false}}
+
+/* ── formatting ────────────────────────────────────────────── */
+const TZ=Intl.DateTimeFormat().resolvedOptions().timeZone||'local';
+const fmtT=new Intl.DateTimeFormat(undefined,{hour:'2-digit',minute:'2-digit',hour12:false});
+const T=d=>d?fmtT.format(d):'—';
+function dur(ms){const m=Math.max(0,Math.round(ms/60000)),h=Math.floor(m/60);
+  return h?h+'h '+String(m%60).padStart(2,'0')+'m':m+'m'}
+
+/* ── state ─────────────────────────────────────────────────── */
+const CITIES=[['Ponda, Goa',15.4027,74.0078],['Panaji, Goa',15.4909,73.8278],
+['Kochi',9.9312,76.2673],['Thiruvananthapuram',8.5241,76.9366],['Thrissur',10.5276,76.2144],
+['Mangaluru',12.9141,74.856],['Udupi',13.3409,74.7421],['Bengaluru',12.9716,77.5946],
+['Chennai',13.0827,80.2707],['Kanchipuram',12.8342,79.7036],['Madurai',9.9252,78.1198],
+['Tirupati',13.6288,79.4192],['Hyderabad',17.385,78.4867],['Mumbai',19.076,72.8777],
+['Pune',18.5204,73.8567],['Ahmedabad',23.0225,72.5714],['Delhi',28.6139,77.209],
+['Varanasi',25.3176,82.9739],['Kolkata',22.5726,88.3639],['Dubai',25.2048,55.2708],
+['Singapore',1.3521,103.8198],['London',51.5074,-0.1278],['New York',40.7128,-74.006],
+['San Francisco',37.7749,-122.4194],['Toronto',43.6532,-79.3832],['Sydney',-33.8688,151.2093]];
+
+const st={lat:15.4027,lon:74.0078,label:'Ponda, Goa',date:new Date(),
+  cfg:{arun:4,eve:1,star:12,mid:'fifth'}};
+const $=id=>document.getElementById(id);
+let model=null;
+
+/* optional persistence — degrades silently */
+async function load(){try{const raw=localStorage.getItem('sandhya:prefs');
+  if(raw){const p=JSON.parse(raw);
+    if(isFinite(p.lat)&&isFinite(p.lon))Object.assign(st,{lat:p.lat,lon:p.lon,label:p.label||'Saved location'});
+    Object.assign(st.cfg,p.cfg||{})}}catch(e){}}
+async function save(){try{localStorage.setItem('sandhya:prefs',
+  JSON.stringify({lat:st.lat,lon:st.lon,label:st.label,cfg:st.cfg}))}catch(e){}}
+
+/* ── render ────────────────────────────────────────────────── */
+function isToday(){const n=new Date();return n.toDateString()===st.date.toDateString()}
+
+function render(){
+  model=buildWindows(st.date,st.lat,st.lon,st.cfg);
+  const dstr=st.date.toLocaleDateString(undefined,{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  $('placeline').innerHTML='<b>'+st.label+'</b> &nbsp;·&nbsp; '+
+    st.lat.toFixed(3)+'°'+(st.lat<0?'S':'N')+' '+Math.abs(st.lon).toFixed(3)+'°'+(st.lon<0?'W':'E')+
+    ' &nbsp;·&nbsp; '+dstr+' &nbsp;·&nbsp; '+TZ;
+
+  if(model.polar){
+    $('status').innerHTML='<div class="lead">No result</div><div class="name" style="font-size:26px">The Sun does not rise or set here on this date.</div><div class="clock">Sandhyā windows are defined by the horizon crossings, so they cannot be drawn. Choose another date or a lower latitude.</div>';
+    $('cards').innerHTML='';$('ref').innerHTML='';$('ribbon').innerHTML='';return}
+
+  renderCards();renderRef();renderRibbon();tick()}
+
+function renderCards(){
+  $('cards').innerHTML=model.windows.map(w=>{
+    const gr=w.grades.map(g=>{
+      const empty=g.b-g.a<60000;
+      return '<div class="grade'+(g.best?' best':'')+'"><span class="g">'+g.g+'</span>'+
+        '<span class="d">'+g.d+'</span><span class="t">'+
+        (empty?'—':T(g.a)+' – '+T(g.b))+'</span></div>'}).join('');
+    return '<article class="card" data-k="'+w.key+'" style="--ac:'+w.ac+'">'+
+      '<div class="head"><div><div class="title">'+w.name+'<span class="dv">'+w.dev+'</span></div>'+
+      '<div class="sub">'+w.sub+'</div></div>'+
+      '<div class="range">'+T(w.start)+' – '+T(w.end)+'</div></div>'+
+      (gr?'<div class="grades">'+gr+'</div>':'')+
+      '<div class="anchor"><span>'+w.anchor.l+'</span><b>'+T(w.anchor.t)+'</b></div></article>'}).join('')}
+
+function renderRef(){
+  const s=model.solar,items=[['Aruṇodaya',model.arun],['Stars fade',model.starDawn],
+    ['Sunrise',s.sunrise],['Transit',s.transit],['Sunset',s.sunset],['Stars appear',model.starDusk]];
+  $('ref').innerHTML=items.map(i=>'<div><dt>'+i[0]+'</dt><dd>'+T(i[1])+'</dd></div>').join('')}
+
+function renderRibbon(){
+  const W=1000,H=190,PAD=0;
+  const d0=new Date(st.date.getFullYear(),st.date.getMonth(),st.date.getDate(),0,0,0);
+  const d1=new Date(d0.getTime()+86400000);
+  const N=288,pts=[];let maxA=-90;
+  for(let i=0;i<=N;i++){const t=new Date(d0.getTime()+i/N*86400000);
+    const a=altitudeAt(t,st.lat,st.lon);pts.push(a);if(a>maxA)maxA=a}
+  const top=Math.min(90,Math.ceil((maxA+7)/5)*5),bot=-42;
+  const X=t=>(t-d0)/86400000*W, Y=a=>H-(a-bot)/(top-bot)*H;
+  const path=pts.map((a,i)=>(i?'L':'M')+(i/N*W).toFixed(1)+' '+Y(a).toFixed(1)).join(' ');
+
+  let bands='';
+  model.windows.forEach(w=>{
+    const x1=Math.max(0,X(w.start)),x2=Math.min(W,X(w.end));
+    if(x2<=x1)return;
+    bands+='<rect x="'+x1.toFixed(1)+'" y="0" width="'+(x2-x1).toFixed(1)+'" height="'+H+
+      '" fill="'+w.ac+'" opacity="0.13"/>'+
+      '<rect x="'+x1.toFixed(1)+'" y="0" width="'+(x2-x1).toFixed(1)+'" height="2.5" fill="'+w.ac+'"/>'+
+      '<text x="'+((x1+x2)/2).toFixed(1)+'" y="18" fill="'+w.ac+
+      '" font-family="IBM Plex Mono, monospace" font-size="13" letter-spacing="1.6" text-anchor="middle">'+
+      w.name.toUpperCase()+'</text>'});
+
+  let levels='';
+  [[0,'horizon'],[-Number(st.cfg.star),'stars']].forEach(l=>{
+    if(l[0]<bot)return;
+    levels+='<line x1="0" y1="'+Y(l[0]).toFixed(1)+'" x2="'+W+'" y2="'+Y(l[0]).toFixed(1)+
+      '" stroke="'+(l[1]==='horizon'?'#4A5066':'#2E3242')+'" stroke-width="1"'+
+      (l[1]==='horizon'?'':' stroke-dasharray="3 5"')+'/>'+
+      '<text x="6" y="'+(Y(l[0])-6).toFixed(1)+'" fill="#5F6478" font-family="IBM Plex Mono, monospace" font-size="10.5" letter-spacing="1.2">'+
+      (l[1]==='horizon'?'HORIZON':'STARS · '+st.cfg.star+'°')+'</text>'});
+
+  let now='';
+  if(isToday()){const n=new Date();
+    if(n>=d0&&n<d1){const x=X(n).toFixed(1);
+      now='<line x1="'+x+'" y1="0" x2="'+x+'" y2="'+H+'" stroke="#EAE7DE" stroke-width="1.5"/>'+
+        '<circle cx="'+x+'" cy="'+Y(altitudeAt(n,st.lat,st.lon)).toFixed(1)+'" r="4.5" fill="#EAE7DE"/>'}}
+
+  $('ribbon').innerHTML='<svg viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" role="img" '+
+    'aria-label="Solar altitude across the day with the three sandhyā windows marked">'+
+    '<defs><clipPath id="rbclip"><rect x="0" y="0" width="'+W+'" height="'+H+'"/></clipPath></defs>'+
+    '<rect x="0" y="0" width="'+W+'" height="'+H+'" fill="#191B27"/>'+bands+levels+
+    '<g clip-path="url(#rbclip)">'+
+    '<path d="'+path+'" fill="none" stroke="#EAE7DE" stroke-width="1.6" opacity="0.75" vector-effect="non-scaling-stroke"/>'+
+    now+'</g></svg><div class="caption"><span>00:00</span><span>SOLAR ALTITUDE</span><span>24:00</span></div>'}
+
+/* ── live status ───────────────────────────────────────────── */
+function tick(){
+  if(!model||model.polar)return;
+  const now=new Date();
+  if(!isToday()){
+    const w=model.windows[0];
+    $('status').innerHTML='<div class="lead">Viewing another date</div>'+
+      '<div class="name">Three junctures</div>'+
+      '<div class="span">'+T(model.windows[0].start)+'<span class="arrow">·</span>'+
+      T(model.windows[1].start)+'<span class="arrow">·</span>'+T(model.windows[2].start)+'</div>'+
+      '<div class="clock">Window openings. The live countdown returns when you set the date back to today.</div>';
+    document.querySelectorAll('.card').forEach(c=>c.classList.remove('on'));return}
+
+  let cur=null,next=null;
+  for(const w of model.windows){if(now>=w.start&&now<w.end){cur=w;break}}
+  if(!cur){for(const w of model.windows){if(now<w.start){next=w;break}}
+    if(!next){const tm=new Date(st.date.getTime()+86400000);
+      const m2=buildWindows(tm,st.lat,st.lon,st.cfg);
+      if(!m2.polar){next=m2.windows[0];next.tomorrow=true}}}
+
+  const w=cur||next;if(!w){$('status').innerHTML='';return}
+  let grade='',gcol=w.ac;
+  if(cur&&cur.grades.length){const g=cur.grades.find(g=>now>=g.a&&now<g.b);
+    if(g)grade='<span class="pill" style="color:'+w.ac+';border-color:'+w.ac+'">'+g.g+'</span>'}
+
+  const head=cur?'Open now':(w.tomorrow?'Next — tomorrow':'Next');
+  const line=cur
+    ? '<span class="big">'+dur(w.end-now)+'</span> of the window remains · closes '+T(w.end)+
+      (w.anchor.t>now?' · '+w.anchor.l.toLowerCase()+' in '+dur(w.anchor.t-now):'')
+    : 'opens in <span class="big">'+dur(w.start-now)+'</span> · '+w.anchor.l.toLowerCase()+' '+T(w.anchor.t);
+
+  $('status').innerHTML='<div class="lead">'+head+'</div>'+
+    '<div class="name" style="color:'+w.ac+'">'+w.name+'<span class="dv">'+w.dev+'</span></div>'+
+    '<div class="span">'+T(w.start)+'<span class="arrow">→</span>'+T(w.end)+' &nbsp;'+grade+'</div>'+
+    '<div class="clock">'+line+'</div>';
+
+  document.querySelectorAll('.card').forEach(c=>c.classList.toggle('on',!!cur&&c.dataset.k===cur.key))}
+
+/* ── controls ──────────────────────────────────────────────── */
+function tzWarn(){
+  const expect=st.lon/15*60, actual=-st.date.getTimezoneOffset();
+  const diff=Math.abs(expect-actual);
+  if(diff>180)return'These coordinates sit about '+Math.round(diff/60)+' hours from your device timezone ('+TZ+'). The instants are right; the clock labels are in device time, not local time there.';
+  return''}
+function msg(text,cls){$('msg').className='msg '+(cls||'');$('msg').textContent=text||''}
+
+function syncInputs(){
+  $('lat').value=st.lat.toFixed(4);$('lon').value=st.lon.toFixed(4);
+  const p=n=>String(n).padStart(2,'0');
+  $('date').value=st.date.getFullYear()+'-'+p(st.date.getMonth()+1)+'-'+p(st.date.getDate());
+  const hit=CITIES.findIndex(c=>Math.abs(c[1]-st.lat)<1e-3&&Math.abs(c[2]-st.lon)<1e-3);
+  $('city').value=hit>=0?String(hit):'custom';
+  $('s-arun').value=st.cfg.arun;$('s-eve').value=st.cfg.eve;
+  $('s-star').value=st.cfg.star;$('s-mid').value=st.cfg.mid;
+  msg(tzWarn(),'warn')}
+
+$('city').innerHTML='<option value="custom">Custom coordinates</option>'+
+  CITIES.map((c,i)=>'<option value="'+i+'">'+c[0]+'</option>').join('');
+
+$('city').onchange=e=>{const v=e.target.value;if(v==='custom')return;
+  const c=CITIES[+v];st.lat=c[1];st.lon=c[2];st.label=c[0];syncInputs();render();save()};
+
+function manual(){
+  const la=parseFloat($('lat').value),lo=parseFloat($('lon').value);
+  if(!isFinite(la)||!isFinite(lo)||Math.abs(la)>90||Math.abs(lo)>180){
+    msg('Latitude must be between −90 and 90, longitude between −180 and 180.','err');return}
+  st.lat=la;st.lon=lo;st.label='Custom';syncInputs();render();save()}
+$('lat').onchange=manual;$('lon').onchange=manual;
+
+$('date').onchange=e=>{const [y,m,d]=e.target.value.split('-').map(Number);
+  if(!y)return;st.date=new Date(y,m-1,d,12,0,0);render()};
+
+['s-arun','s-eve','s-star','s-mid'].forEach(id=>{
+  $(id).onchange=e=>{const k=id.slice(2);
+    st.cfg[k]=(k==='mid')?e.target.value:parseInt(e.target.value,10);
+    render();save()}});
+
+$('geo').onclick=()=>{
+  if(!navigator.geolocation){msg('This browser does not expose location. Pick a place or type coordinates.','err');return}
+  msg('Asking for location…');$('geo').textContent='Locating…';
+  navigator.geolocation.getCurrentPosition(pos=>{
+    st.lat=pos.coords.latitude;st.lon=pos.coords.longitude;st.label='Your location';
+    $('geo').textContent='Use my location';syncInputs();render();save();
+    msg(tzWarn()||'Located to about ±'+Math.round(pos.coords.accuracy)+' m.',tzWarn()?'warn':'')},
+  err=>{$('geo').textContent='Use my location';
+    msg(err.code===1?'Location permission was declined. Pick a place below or type coordinates instead.'
+      :'Location is unavailable right now. Pick a place below or type coordinates instead.','err')},
+  {enableHighAccuracy:false,timeout:10000,maximumAge:600000})};
+
+/* ── boot ──────────────────────────────────────────────────── */
+(async()=>{
+  await load();
+  syncInputs();render();
+  let lastMin=-1;
+  setInterval(()=>{tick();
+    const m=Math.floor(Date.now()/60000);
+    if(m!==lastMin){lastMin=m;if(isToday())renderRibbon()}},1000);
+  if(navigator.geolocation&&navigator.permissions){
+    try{const p=await navigator.permissions.query({name:'geolocation'});
+      if(p.state==='granted')$('geo').click()}catch(e){}}
+})();
+</script>
+</body>
+</html>
